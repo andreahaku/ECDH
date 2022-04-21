@@ -46,20 +46,20 @@ class ECDH {
     this.secretKey = this.ecdh.computeSecret(otherPublicKey, "base64", "hex");
   };
 
-  /**
-   * Encrypts a data message using the secret key
-   *
-   * @param {string} data - data string to be encrypted
-   * @returns - encrypted string in base64
-   */
-  encrypt = (data) => {
-    const cipher = crypto.createCipher("aes-256-cbc", this.secretKey);
+  // /**
+  //  * Encrypts a data message using the secret key
+  //  *
+  //  * @param {string} data - data string to be encrypted
+  //  * @returns - encrypted string in base64
+  //  */
+  // encrypt = (data) => {
+  //   const cipher = crypto.createCipher("aes-256-cbc", this.secretKey);
 
-    let encryptedData = cipher.update(data, "utf8", "base64");
-    encryptedData += cipher.final("base64");
+  //   let encryptedData = cipher.update(data, "utf8", "base64");
+  //   encryptedData += cipher.final("base64");
 
-    return encryptedData;
-  };
+  //   return encryptedData;
+  // };
 
   /**
    * Encrypts a data message using the secret key
@@ -88,20 +88,20 @@ class ECDH {
     return payload64;
   };
 
-  /**
-   * Decrypts a data message using the secret key
-   *
-   * @param {string} encryptedData - base64 data string to be decrypted
-   * @returns - decrypted data
-   */
-  decrypt = (encryptedData) => {
-    const decipher = crypto.createDecipher("aes-256-cbc", this.secretKey);
+  // /**
+  //  * Decrypts a data message using the secret key
+  //  *
+  //  * @param {string} encryptedData - base64 data string to be decrypted
+  //  * @returns - decrypted data
+  //  */
+  // decrypt = (encryptedData) => {
+  //   const decipher = crypto.createDecipher("aes-256-cbc", this.secretKey);
 
-    let decryptedData = decipher.update(encryptedData, "base64", "utf8");
-    decryptedData += decipher.final("utf8");
+  //   let decryptedData = decipher.update(encryptedData, "base64", "utf8");
+  //   decryptedData += decipher.final("utf8");
 
-    return decryptedData;
-  };
+  //   return decryptedData;
+  // };
 
   /**
    * Decrypts a data message using the secret key
@@ -131,7 +131,8 @@ class ECDH {
 
       return decrypted;
     } catch (error) {
-      return error.message;
+      console.warn(error.message);
+      return false;
     }
   };
 }
@@ -156,40 +157,42 @@ AlicePublicKey = AliceECDH.getPublicKey();
 BobPublicKey = BobECDH.getPublicKey();
 CharlesPublicKey = CharlesECDH.getPublicKey();
 
+console.log("ALICE Pkey:", AlicePublicKey);
+console.log("BOB Pkey:", BobPublicKey);
+console.log("CHARLES Pkey:", CharlesPublicKey);
+console.log();
+
 AliceECDH.computeECDHSecret(BobPublicKey);
 BobECDH.computeECDHSecret(AlicePublicKey);
-
 CharlesECDH.computeECDHSecret(AlicePublicKey);
-
-console.log("ALICE - BOB:", AliceECDH.secretKey);
-console.log("BOB - ALICE:", BobECDH.secretKey);
-console.log("CHARLES - ALICE:", CharlesECDH.secretKey);
-
 CharlesECDH.computeECDHSecret(BobPublicKey);
-console.log("CHARLES - BOB:", CharlesECDH.secretKey);
 
+console.log("ALICE - BOB:", AliceECDH.secretKey, AliceECDH.secretKey.length);
+console.log("BOB - ALICE:", BobECDH.secretKey);
+console.log();
+
+console.log("CHARLES - ALICE:", CharlesECDH.secretKey);
+console.log("CHARLES - BOB:", CharlesECDH.secretKey);
 console.log();
 
 const message = "This is a test message";
 const message2 = "This is another test message";
-const message3 = "This is the last test message";
 
 // const encryptedMessage = BobECDH.encrypt(message);
 // const decryptedMessage = AliceECDH.decrypt(encryptedMessage);
-
 // console.log("MESSAGE:", decryptedMessage);
 
+console.log("Bob > Alice");
 let encryptedMessageIV = BobECDH.encryptAuthIV(message);
 let decryptedMessageIV = AliceECDH.decryptAuthIV(encryptedMessageIV);
-
 console.log("MESSAGE IV:", decryptedMessageIV, "\n");
 
-encryptedMessageIV = BobECDH.encryptAuthIV(message2);
-decryptedMessageIV = AliceECDH.decryptAuthIV(encryptedMessageIV);
-
+console.log("Alice > Bob");
+encryptedMessageIV = AliceECDH.encryptAuthIV(message2);
+decryptedMessageIV = BobECDH.decryptAuthIV(encryptedMessageIV);
 console.log("MESSAGE IV:", decryptedMessageIV, "\n");
 
-encryptedMessageIV = BobECDH.encryptAuthIV(message3);
+console.log("Charles > Alice");
+encryptedMessageIV = CharlesECDH.encryptAuthIV(message2);
 decryptedMessageIV = AliceECDH.decryptAuthIV(encryptedMessageIV);
-
 console.log("MESSAGE IV:", decryptedMessageIV, "\n");
